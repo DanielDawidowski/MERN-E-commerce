@@ -6,8 +6,7 @@ const { requireSignin, isAdmin, isAuth } = require('../controllers/auth')
 const { userById } = require('../controllers/user')
 
 
-router.post("/product/create/:userId", requireSignin, isAuth, isAdmin, create);
-
+router.post("/product/create/:userId", requireSignin, isAuth, isAdmin, create)
 
 router.param("userId", userById)
 
