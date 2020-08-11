@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { isAuth } from "../auth";
 import Layout from "../core/Layout";
+import { createCategory } from "./apiAdmin";
 
 const AddCategory = () => {
   const [name, setName] = useState("");
@@ -21,6 +22,14 @@ const AddCategory = () => {
     setError("");
     setSuccess(false);
     // make req to api to create category
+    createCategory(user._id, token, { name }).then((data) => {
+      if (data.error) {
+        setError(true);
+      } else {
+        setError("");
+        setSuccess(true);
+      }
+    });
   };
 
   const newCategoryForm = () => (
@@ -33,16 +42,42 @@ const AddCategory = () => {
           onChange={handleChange}
           value={name}
           autoFocus
+          required
         />
       </div>
       <button className="btn btn-primary">Create Category</button>
     </form>
   );
 
+  const showSuccess = () => {
+    if (success) {
+      return <h3 className="text-success">Category created</h3>;
+    }
+  };
+
+  const showError = () => {
+    if (error) {
+      return <h3 className="text-danger">Category already exist</h3>;
+    }
+  };
+
+  const goBack = () => (
+    <div className="mt-5">
+      <Link to="/admin/dashboard" className="text-warning">
+        Back to Dashboard
+      </Link>
+    </div>
+  );
+
   return (
     <Layout title="Add Category" description="Create a Category">
       <div className="row">
-        <div className="col-md-8 offset-md-2">{newCategoryForm()}</div>
+        <div className="col-md-8 offset-md-2">
+          {showSuccess()}
+          {showError()}
+          {newCategoryForm()}
+          {goBack()}
+        </div>
       </div>
     </Layout>
   );
