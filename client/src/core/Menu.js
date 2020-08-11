@@ -6,11 +6,7 @@ const isActive = (history, path) =>
   history.location.pathname === path
     ? { color: "#ff9900" }
     : { color: "#ffffff" };
-//   if (history.location.pathname === path) {
-//     return { color: "#ff9900" };
-//   } else {
-//     return { color: "#ffffff" };
-//   }
+
 const Menu = ({ history }) => (
   <div>
     <ul className="nav nav-tabs bg-primary">
@@ -44,15 +40,28 @@ const Menu = ({ history }) => (
       )}
       {isAuth() && (
         <>
-          <li className="nav-item">
-            <Link
-              className="nav-link"
-              style={isActive(history, "/user/dashboard")}
-              to="/user/dashboard"
-            >
-              Dashboard
-            </Link>
-          </li>
+          {isAuth() && isAuth().user.role === 0 && (
+            <li className="nav-item">
+              <Link
+                className="nav-link"
+                style={isActive(history, "/user/dashboard")}
+                to="/user/dashboard"
+              >
+                Dashboard
+              </Link>
+            </li>
+          )}
+          {isAuth() && isAuth().user.role === 1 && (
+            <li className="nav-item">
+              <Link
+                className="nav-link"
+                style={isActive(history, "/admin/dashboard")}
+                to="/admin/dashboard"
+              >
+                Admin Dashboard
+              </Link>
+            </li>
+          )}
           <li className="nav-item">
             <span
               className="nav-link"
