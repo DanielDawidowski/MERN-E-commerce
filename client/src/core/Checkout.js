@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getBraintreeClientToken } from "./ApiCore";
+import { getBraintreeClientToken, processPayment } from "./ApiCore";
 import { isAuth } from "../auth";
 import { Link } from "react-router-dom";
 import DropIn from "braintree-web-drop-in-react";
@@ -21,7 +21,7 @@ const Checkout = ({ products }) => {
       if (data.error) {
         setData({ ...data, error: data.error });
       } else {
-        setData({ ...data, clientToken: data.clientToken });
+        setData({ clientToken: data.clientToken });
       }
     });
   };
@@ -51,13 +51,26 @@ const Checkout = ({ products }) => {
     let getNonce = data.instance
       .requestPaymentMethod()
       .then((data) => {
-        console.log(data);
+        // console.log(data);
         nonce = data.nonce;
-        console.log(
-          "send nonce and tototal to process:",
-          nonce,
-          getTotal(products)
-        );
+        // console.log(
+        //   "send nonce and tototal to process:",
+        //   nonce,
+        //   getTotal(products)
+        // );
+        const paymentData = {
+          paymentMethodNonce: nonce,
+          amount: getTotal(products),
+        };
+
+        processPayment(userId, token, paymentData)
+          // .then((response) => console.log(response))
+          .then((response) => {
+            setData({ ...data, success: response.success });
+            // empty cart
+            // create Order
+          })
+          .catch((error) => console.log(error));
       })
       .catch((error) => {
         console.log("dropin error:", error);
@@ -75,7 +88,7 @@ const Checkout = ({ products }) => {
             }}
             onInstance={(instance) => (data.instance = instance)}
           />
-          <button onClick={buy} className="btn btn-success">
+          <button onClick={buy} className="btn btn-success btn-block">
             Pay
           </button>
         </div>
@@ -92,9 +105,19 @@ const Checkout = ({ products }) => {
     </div>
   );
 
+  const showSuccess = (success) => (
+    <div
+      className="alert alert-info"
+      style={{ display: success ? "" : "none" }}
+    >
+      Thanks! your payment was successfull
+    </div>
+  );
+
   return (
     <div>
       <h2>Total: ${getTotal()}</h2>
+      {showSuccess(data.success)}
       {showError(data.error)}
       {showCheckout()}
     </div>
