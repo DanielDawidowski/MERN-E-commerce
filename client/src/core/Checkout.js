@@ -90,21 +90,30 @@ const Checkout = ({ products }) => {
               address: data.address,
             };
 
-            createOrder(userId, token, createOrderData);
-
-            setData({ ...data, success: response.success });
-            // empty cart
-            emptyCart(() => {
-              // console.log("empty cart");
-              setData({ loading: false });
-              setRedirect(true);
-            });
+            createOrder(userId, token, createOrderData)
+              .then((response) => {
+                emptyCart(() => {
+                  console.log("payment success and empty cart");
+                  setData({
+                    loading: false,
+                    success: true,
+                  });
+                  setRedirect(true);
+                });
+              })
+              .catch((error) => {
+                console.log(error);
+                setData({ loading: false });
+              });
           })
-          .catch((error) => console.log(error));
+          .catch((error) => {
+            console.log(error);
+            setData({ loading: false });
+          });
       })
       .catch((error) => {
         console.log("dropin error:", error);
-        setData({ loading: false });
+        setData({ ...data, error: error.message });
       });
   };
 
