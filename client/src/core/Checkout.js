@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { emptyCart } from "./cartHelpers";
 import { getBraintreeClientToken, processPayment } from "./ApiCore";
 import { isAuth } from "../auth";
-import { Link } from "react-router-dom";
+import { Link, Redirect } from "react-router-dom";
 import DropIn from "braintree-web-drop-in-react";
 
 const Checkout = ({ products }) => {
@@ -13,8 +14,16 @@ const Checkout = ({ products }) => {
     address: "",
   });
 
+  const [redirect, setRedirect] = useState(false);
+
   const userId = isAuth() && isAuth().user._id;
   const token = isAuth() && isAuth().token;
+
+  const shouldRedirect = (redirect) => {
+    if (redirect) {
+      return <Redirect to="/cart" />;
+    }
+  };
 
   const getToken = (userId, token) => {
     getBraintreeClientToken(userId, token).then((data) => {
@@ -68,6 +77,10 @@ const Checkout = ({ products }) => {
           .then((response) => {
             setData({ ...data, success: response.success });
             // empty cart
+            emptyCart(() => {
+              console.log("empty cart");
+              setRedirect(true);
+            });
             // create Order
           })
           .catch((error) => console.log(error));
@@ -116,6 +129,7 @@ const Checkout = ({ products }) => {
 
   return (
     <div>
+      {shouldRedirect(redirect)}
       <h2>Total: ${getTotal()}</h2>
       {showSuccess(data.success)}
       {showError(data.error)}
