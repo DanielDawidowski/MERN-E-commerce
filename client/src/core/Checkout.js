@@ -7,6 +7,7 @@ import DropIn from "braintree-web-drop-in-react";
 
 const Checkout = ({ products }) => {
   const [data, setData] = useState({
+    loading: false,
     success: false,
     clientToken: null,
     error: "",
@@ -56,6 +57,7 @@ const Checkout = ({ products }) => {
   };
 
   const buy = () => {
+    setData({ loading: true });
     let nonce;
     let getNonce = data.instance
       .requestPaymentMethod()
@@ -78,7 +80,8 @@ const Checkout = ({ products }) => {
             setData({ ...data, success: response.success });
             // empty cart
             emptyCart(() => {
-              console.log("empty cart");
+              // console.log("empty cart");
+              setData({ loading: false });
               setRedirect(true);
             });
             // create Order
@@ -87,7 +90,7 @@ const Checkout = ({ products }) => {
       })
       .catch((error) => {
         console.log("dropin error:", error);
-        setData({ ...data, error: error.message });
+        setData({ loading: false });
       });
   };
 
@@ -98,6 +101,9 @@ const Checkout = ({ products }) => {
           <DropIn
             options={{
               authorization: data.clientToken,
+              paypal: {
+                flow: "vault",
+              },
             }}
             onInstance={(instance) => (data.instance = instance)}
           />
@@ -127,10 +133,14 @@ const Checkout = ({ products }) => {
     </div>
   );
 
+  const showLoading = (loading) =>
+    loading && <h2 className="text-danger">Loading...</h2>;
+
   return (
     <div>
       {shouldRedirect(redirect)}
       <h2>Total: ${getTotal()}</h2>
+      {showLoading(data.loading)}
       {showSuccess(data.success)}
       {showError(data.error)}
       {showCheckout()}
