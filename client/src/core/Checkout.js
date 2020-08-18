@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { emptyCart } from "./cartHelpers";
-import { getBraintreeClientToken, processPayment } from "./ApiCore";
+import {
+  getBraintreeClientToken,
+  processPayment,
+  createOrder,
+} from "./ApiCore";
 import { isAuth } from "../auth";
 import { Link, Redirect } from "react-router-dom";
 import DropIn from "braintree-web-drop-in-react";
@@ -77,6 +81,17 @@ const Checkout = ({ products }) => {
         processPayment(userId, token, paymentData)
           // .then((response) => console.log(response))
           .then((response) => {
+            console.log(response);
+            // create Order
+            const createOrderData = {
+              products: products,
+              transaction_id: response.transaction.id,
+              amount: response.transaction.amount,
+              address: data.address,
+            };
+
+            createOrder(userId, token, createOrderData);
+
             setData({ ...data, success: response.success });
             // empty cart
             emptyCart(() => {
@@ -84,7 +99,6 @@ const Checkout = ({ products }) => {
               setData({ loading: false });
               setRedirect(true);
             });
-            // create Order
           })
           .catch((error) => console.log(error));
       })
@@ -94,10 +108,23 @@ const Checkout = ({ products }) => {
       });
   };
 
+  const handleAddress = (e) => {
+    setData({ ...data, address: e.target.value });
+  };
+
   const showDropIn = () => (
     <div onBlur={() => setData({ ...data, error: "" })}>
       {data.clientToken !== null && products.length > 0 ? (
         <div>
+          <div className="form-group mb-3">
+            <label className="text-muted">Delivery address:</label>
+            <textarea
+              onChange={handleAddress}
+              className="form-control"
+              value={data.address}
+              placeholder="Type your delivery address here ..."
+            />
+          </div>
           <DropIn
             options={{
               authorization: data.clientToken,
